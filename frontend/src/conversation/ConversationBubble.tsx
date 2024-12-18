@@ -105,50 +105,48 @@ const ConversationBubble = forwardRef<
               style={{
                 wordBreak: 'break-word',
               }}
-              className="text-sm sm:text-base ml-2 mr-2 flex items-center rounded-[28px] bg-purple-30 py-[14px] px-[19px] text-white max-w-full whitespace-pre-wrap leading-normal"
+              className="ml-2 mr-2 flex items-center rounded-[28px] bg-purple-30 py-[14px] px-[19px] text-white max-w-full whitespace-pre-wrap leading-normal"
             >
               {message}
             </div>
           )}
           {isEditClicked && (
-            <div ref={editableQueryRef} className="w-[75%] flex flex-col">
-              <textarea
-                placeholder="Type the updated query..."
-                onChange={(e) => {
-                  setEditInputBox(e.target.value);
-                }}
-                rows={1}
-                value={editInputBox}
-                className="ml-2 mr-12 text-[15px] resize-y h-12 min-h-max rounded-3xl p-3  no-scrollbar leading-relaxed dark:border-[0.5px] dark:border-white dark:bg-raisin-black dark:text-white px-[18px] border-[1.5px] border-black"
-              />
-              <div
-                className={`flex flex-row-reverse justify-end gap-1 mt-3 text-sm font-medium`}
-              >
-                <button
-                  className="rounded-full bg-[#CDB5FF] hover:bg-[#E1D3FF] py-[10px] px-[15px] text-purple-30 max-w-full whitespace-pre-wrap leading-none"
-                  onClick={() => handleEditClick()}
-                >
-                  Update
-                </button>
-                <button
-                  className="py-[10px] px-[15px]  no-underline hover:underline  text-purple-30 max-w-full whitespace-pre-wrap leading-normal"
-                  onClick={() => setIsEditClicked(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+            <input
+              onChange={(e) => setEditInputBox(e.target.value)}
+              value={editInputBox}
+              className="w-[85%] ml-2 mr-2 rounded-[28px] py-[12px] dark:border-[0.5px] dark:border-white dark:bg-raisin-black dark:text-white px-[18px] border-[1.5px] border-black"
+            />
           )}
-          <button
-            onClick={() => {
-              setIsEditClicked(true);
-              setEditInputBox(message);
-            }}
-            className={`h-fit mt-3 p-2 cursor-pointer rounded-full hover:bg-[#35363B] flex items-center ${isQuestionHovered || isEditClicked ? 'visible' : 'invisible'}`}
+          <div
+            className={`  flex items-center ${isQuestionHovered ? 'visible' : 'invisible'}`}
           >
-            <img src={Edit} alt="Edit" className="cursor-pointer" />
-          </button>
+            <img
+              src={Edit}
+              alt="Edit"
+              className="cursor-pointer"
+              onClick={() => {
+                setIsEditClicked(true);
+                setEditInputBox(message);
+              }}
+            />
+          </div>
         </div>
+        {isEditClicked && (
+          <div className={`flex gap-3 self-end mt-3  `}>
+            <button
+              className="ml-2 mr-2 flex items-center rounded-[28px]  font-semibold hover:font-bold py-[14px] px-[19px] no-underline hover:underline  text-purple-500 max-w-full whitespace-pre-wrap leading-normal"
+              onClick={() => setIsEditClicked(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="ml-2 mr-2 flex items-center rounded-full bg-purple-300 hover:bg-purple-100 font-bold px-[19px] py-[2px] text-purple-500 max-w-full whitespace-pre-wrap leading-none"
+              onClick={() => handleEditClick()}
+            >
+              Update
+            </button>
+          </div>
+        )}
       </div>
     );
   } else {
@@ -349,7 +347,12 @@ const ConversationBubble = forwardRef<
                       </div>
                     </div>
                   ) : (
-                    <code className="whitespace-pre-line">{children}</code>
+                    <code
+                      className={className ? className : 'whitespace-pre-line'}
+                      {...props}
+                    >
+                      {children}
+                    </code>
                   );
                 },
                 ul({ children }) {
@@ -436,7 +439,8 @@ const ConversationBubble = forwardRef<
                   feedback === 'LIKE' || type !== 'ERROR'
                     ? 'group-hover:lg:visible'
                     : ''
-                }`}
+                }
+                ${feedback === 'DISLIKE' && type !== 'ERROR' ? 'hidden' : ''}`}
               >
                 <div>
                   <div
@@ -454,9 +458,15 @@ const ConversationBubble = forwardRef<
                       : 'fill-none  stroke-gray-4000'
                   }`}
                       onClick={() => {
-                        handleFeedback?.('LIKE');
-                        setIsLikeClicked(true);
-                        setIsDislikeClicked(false);
+                        if (feedback === undefined || feedback === null) {
+                          handleFeedback?.('LIKE');
+                          setIsLikeClicked(true);
+                          setIsDislikeClicked(false);
+                        } else if (feedback === 'LIKE') {
+                          handleFeedback?.(null);
+                          setIsLikeClicked(false);
+                          setIsDislikeClicked(false);
+                        }
                       }}
                       onMouseEnter={() => setIsLikeHovered(true)}
                       onMouseLeave={() => setIsLikeHovered(false)}
@@ -471,7 +481,7 @@ const ConversationBubble = forwardRef<
                   feedback === 'DISLIKE' || type !== 'ERROR'
                     ? 'group-hover:lg:visible'
                     : ''
-                }`}
+                } ${feedback === 'LIKE' && type !== 'ERROR' ? ' hidden' : ''} `}
               >
                 <div>
                   <div
@@ -488,9 +498,15 @@ const ConversationBubble = forwardRef<
                           : 'fill-none  stroke-gray-4000'
                       }`}
                       onClick={() => {
-                        handleFeedback?.('DISLIKE');
-                        setIsDislikeClicked(true);
-                        setIsLikeClicked(false);
+                        if (feedback === undefined || feedback === null) {
+                          handleFeedback?.('DISLIKE');
+                          setIsDislikeClicked(true);
+                          setIsLikeClicked(false);
+                        } else if (feedback === 'DISLIKE') {
+                          handleFeedback?.(null);
+                          setIsLikeClicked(false);
+                          setIsDislikeClicked(false);
+                        }
                       }}
                       onMouseEnter={() => setIsDislikeHovered(true)}
                       onMouseLeave={() => setIsDislikeHovered(false)}
